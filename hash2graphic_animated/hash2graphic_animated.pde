@@ -1,55 +1,78 @@
+/*
+The seed, the starting point is transformed by the SHA-512 algorithm into a hash.
+As the seed is for easier use an incrementing integer starting with 0, 
+it must be converted to a string in order to be processed by the hashing algorithm
+*/
+
+import controlP5.*;
+
+ControlP5 cp5;
+
+int multiplierValue = 20;
+int speed = 30;
+Slider abc;
+
 int seed = 0;
-// impliziert die unlesbarkeit von mustern ästhetische erfahrung
-// appersu - in den text kursiv an den rand
 String hash;
-char[] dna;
-
 int multiplier;
-
 int r = Math.round(random(0, 128));
 
 color[] colors = {
-  #F4F1BB, #EB5160, #7D82B8, #613F75, #75BBA7, #D7DAE5, #B9CDDA, #8A84E2, #E59F71, #BA5A31, #EFB0A1, #F3F8F2, 
-  #3581B8, #FCB07E, #DEE2D6, #12100E, #817F75, #FFEE93, #B3B5BB, #ADF7B6, #FC9E4F, #F5E0B7, #8BBF9F, #82D4BB, 
-  #82C09A, #1E3888, #E2DE84, #47A8BD, #AF9164, #031927, #E3C567, #F3DE8A, #F2F3AE, #FED766, #EF476F
+#ffcbf2,#f3c4fb,#ecbcfd,#e5b3fe,#e2afff,#deaaff,#d8bbff,#d0d1ff,#c8e7ff,#c0fdff, // vaporspace
+#05668d,#028090,#00a896,#02c39a,#f0f3bd, // blueish-greens
+#f94144,#f3722c,#f8961e,#f9844a,#f9c74f,#90be6d,#43aa8b,#4d908e,#577590, #277da1, // gedeckter grundstock
+#eddcd2,#fff1e6,#fde2e4,#fad2e1,#c5dedd,#dbe7e4,#f0efeb,#d6e2e9,#bcd4e6,#99c1de, // pasetel tones
+#7400b8,#6930c3,#5e60ce,#5390d9,#4ea8de,#48bfe3,#56cfe1,#64dfdf,#72efdd,#80ffdb, // blue-violettes
 }; 
 
+
+
 void setup() {
-  //size(1000, 1000);
-  fullScreen();
-  noCursor();
-  frameRate(1);
+  cp5 = new ControlP5(this);
+  cp5.addSlider("multiplierValue")
+    .setPosition(50,50)
+    .setRange(1,100)
+  ;
+
+  cp5.addSlider("speed")
+    .setPosition(50,75)
+    .setRange(1,30)
+  ;
+
+    cp5.addSlider("seed")
+    .setPosition(50,100)
+    .setRange(1,1000)
+  ;
+
+  size(800, 800);
+  //fullScreen();
+  //noCursor();
+  frameRate(30);
   //noLoop();
   regenerate();
+
+  
 }
 
 void draw() {
   background(colors[0]); 
-  
-  //println(dna[r]);
+  frameRate(speed);
 
-  //dna[0]++;
+  fill(multiplierValue);
+  rect(0,0,width,100);
 
   
- // println(dna[r]);
- 
-  hash = "";
+  hash = sha512(str(seed));
   
-  for (int i = 0; i < dna.length; i++) {
-    hash += (String.valueOf(dna[i]));
-  }
-
- 
   color[] colors = getColors(hash);
 
   int[] transformation1 = transformation1(hash, colors);
   int[][] transformation2 = transformation2(transformation1);
 
-  int ca = hash.chars().sum() % transformation2[0].length + 1;
-
-  for (int i = 0; i < frameCount % 60; i++) { // ca frameCount % 60
+  for (int i = 0; i < multiplierValue % 1000; i++) {
   multiplier = floor(random(i,100));
     transformation2 = transformation3(transformation2, colors.length);
+    
   }
   showState(transformation2, colors);
   
@@ -64,38 +87,18 @@ void keyReleased() {
     seed++;
     regenerate();
   }
-  if (keyCode == DOWN) {
-    dna[0]++;
-  }
-    if (keyCode == UP) {
-    dna[0]--;
-  }
   if (key == ' ') {
     regenerate();
   }
-
   if (key == 's') {
     saveFrame("export/seed_" + nf(seed, 4) + ".png");
   }
-  
   redraw();
 }
 
 void regenerate () {
-  
   hash = sha512(str(seed));
-  
-  dna = new char[hash.length()];
-  
-  for (int i = 0; i < hash.length(); i++) {
-    dna[i] = hash.charAt(i);
   }
-  
-  hash = "";
-  
-
-  }
-  
 
 void showState(int[][] state, color[] colors) {
   for (int i = 0; i < state.length; i++) {
@@ -147,8 +150,6 @@ int[] transformation1(String hash, color[] colors) {
     int colorIndex = position % colors.length;
 
     if (i > 0) {    
-      //int multiplier = int(hash.charAt(i-1)) % max(position, 1);
-      //int multiplier = position % max(int(hash.charAt(i-1)), 1);
       for (int j = 0; j < multiplier; j++) {
         convertedCharacters.add(colorIndex);
       }
