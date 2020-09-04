@@ -31,6 +31,7 @@ ControlP5 cp5;
 
 int multiplierValue = 20;
 int speed = 30;
+int colorPalette = 0;
 Slider abc;
 
 int seed = 0;
@@ -38,12 +39,13 @@ String hash;
 int multiplier;
 int r = Math.round(random(0, 128));
 
-int[] colors = {
-0xffffcbf2,0xfff3c4fb,0xffecbcfd,0xffe5b3fe,0xffe2afff,0xffdeaaff,0xffd8bbff,0xffd0d1ff,0xffc8e7ff,0xffc0fdff, // vaporspace
-0xff05668d,0xff028090,0xff00a896,0xff02c39a,0xfff0f3bd, // blueish-greens
-0xfff94144,0xfff3722c,0xfff8961e,0xfff9844a,0xfff9c74f,0xff90be6d,0xff43aa8b,0xff4d908e,0xff577590, 0xff277da1, // gedeckter grundstock
-0xffeddcd2,0xfffff1e6,0xfffde2e4,0xfffad2e1,0xffc5dedd,0xffdbe7e4,0xfff0efeb,0xffd6e2e9,0xffbcd4e6,0xff99c1de, // pasetel tones
-0xff7400b8,0xff6930c3,0xff5e60ce,0xff5390d9,0xff4ea8de,0xff48bfe3,0xff56cfe1,0xff64dfdf,0xff72efdd,0xff80ffdb, // blue-violettes
+int[][] colors = {
+{0xffffcbf2,0xfff3c4fb,0xffecbcfd,0xffe5b3fe,0xffe2afff,0xffdeaaff,0xffd8bbff,0xffd0d1ff,0xffc8e7ff,0xffc0fdff}, // vaporspace
+{0xff05668d,0xff028090,0xff00a896,0xff02c39a,0xfff0f3bd,0xff05668d,0xff028090,0xff00a896,0xff02c39a,0xfff0f3bd}, // blueish-greens
+{0xfff94144,0xfff3722c,0xfff8961e,0xfff9844a,0xfff9c74f,0xff90be6d,0xff43aa8b,0xff4d908e,0xff577590,0xff277da1}, // gedeckter grundstock
+{0xffeddcd2,0xfffff1e6,0xfffde2e4,0xfffad2e1,0xffc5dedd,0xffdbe7e4,0xfff0efeb,0xffd6e2e9,0xffbcd4e6,0xff99c1de}, // pasetel tones
+{0xff7400b8,0xff6930c3,0xff5e60ce,0xff5390d9,0xff4ea8de,0xff48bfe3,0xff56cfe1,0xff64dfdf,0xff72efdd,0xff80ffdb}, // blue-violettes
+{0xff9b5de5,0xfff15bb5,0xfffee440,0xff00bbf9,0xff00f5d4,0xff9b5de5,0xfff15bb5,0xfffee440,0xff00bbf9,0xff00f5d4} // bunt
 }; 
 
 
@@ -65,6 +67,11 @@ public void setup() {
     .setRange(1,1000)
   ;
 
+  cp5.addSlider("colorPalette")
+    .setPosition(50,150)
+    .setRange(0,5)
+  ;
+
   
   //fullScreen();
   //noCursor();
@@ -76,7 +83,7 @@ public void setup() {
 }
 
 public void draw() {
-  background(colors[0]); 
+  background(colors[0][0]); 
   frameRate(speed);
 
   fill(multiplierValue);
@@ -142,16 +149,16 @@ public int[] getColors(String hash) {
   int colorRange = hash.chars().sum() % 98;
   int indexJump = hash.chars().sum() % 2 + 1;
 
-  int length = min(colorCount, colors.length);
+  int length = min(colorCount, colors[colorPalette].length);
   length = max(3, colorCount);
 
-  int start = floor(PApplet.parseFloat(colors.length) * PApplet.parseFloat(colorRange) / 99.0f);
+  int start = floor(PApplet.parseFloat(colors[colorPalette].length) * PApplet.parseFloat(colorRange) / 99.0f);
 
   int[] trimmedColors = new int[length];
 
   for (int i = 0; i < length; i++) {
     int copyIndex = (start + i * indexJump) % colors.length;
-    trimmedColors[i] = colors[copyIndex];
+    trimmedColors[i] = colors[colorPalette][copyIndex];
   }
   return trimmedColors;
 }

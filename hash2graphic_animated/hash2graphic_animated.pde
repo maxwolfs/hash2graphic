@@ -10,6 +10,7 @@ ControlP5 cp5;
 
 int multiplierValue = 20;
 int speed = 30;
+int colorPalette = 0;
 Slider abc;
 
 int seed = 0;
@@ -17,12 +18,13 @@ String hash;
 int multiplier;
 int r = Math.round(random(0, 128));
 
-color[] colors = {
-#ffcbf2,#f3c4fb,#ecbcfd,#e5b3fe,#e2afff,#deaaff,#d8bbff,#d0d1ff,#c8e7ff,#c0fdff, // vaporspace
-#05668d,#028090,#00a896,#02c39a,#f0f3bd, // blueish-greens
-#f94144,#f3722c,#f8961e,#f9844a,#f9c74f,#90be6d,#43aa8b,#4d908e,#577590, #277da1, // gedeckter grundstock
-#eddcd2,#fff1e6,#fde2e4,#fad2e1,#c5dedd,#dbe7e4,#f0efeb,#d6e2e9,#bcd4e6,#99c1de, // pasetel tones
-#7400b8,#6930c3,#5e60ce,#5390d9,#4ea8de,#48bfe3,#56cfe1,#64dfdf,#72efdd,#80ffdb, // blue-violettes
+color[][] colors = {
+{#ffcbf2,#f3c4fb,#ecbcfd,#e5b3fe,#e2afff,#deaaff,#d8bbff,#d0d1ff,#c8e7ff,#c0fdff}, // vaporspace
+{#05668d,#028090,#00a896,#02c39a,#f0f3bd,#05668d,#028090,#00a896,#02c39a,#f0f3bd}, // blueish-greens
+{#f94144,#f3722c,#f8961e,#f9844a,#f9c74f,#90be6d,#43aa8b,#4d908e,#577590,#277da1}, // gedeckter grundstock
+{#eddcd2,#fff1e6,#fde2e4,#fad2e1,#c5dedd,#dbe7e4,#f0efeb,#d6e2e9,#bcd4e6,#99c1de}, // pasetel tones
+{#7400b8,#6930c3,#5e60ce,#5390d9,#4ea8de,#48bfe3,#56cfe1,#64dfdf,#72efdd,#80ffdb}, // blue-violettes
+{#9b5de5,#f15bb5,#fee440,#00bbf9,#00f5d4,#9b5de5,#f15bb5,#fee440,#00bbf9,#00f5d4} // bunt
 }; 
 
 
@@ -44,6 +46,11 @@ void setup() {
     .setRange(1,1000)
   ;
 
+  cp5.addSlider("colorPalette")
+    .setPosition(50,125)
+    .setRange(0,5)
+  ;
+
   size(800, 800);
   //fullScreen();
   //noCursor();
@@ -55,7 +62,7 @@ void setup() {
 }
 
 void draw() {
-  background(colors[0]); 
+  background(colors[0][0]); 
   frameRate(speed);
 
   fill(multiplierValue);
@@ -121,16 +128,16 @@ color[] getColors(String hash) {
   int colorRange = hash.chars().sum() % 98;
   int indexJump = hash.chars().sum() % 2 + 1;
 
-  int length = min(colorCount, colors.length);
+  int length = min(colorCount, colors[colorPalette].length);
   length = max(3, colorCount);
 
-  int start = floor(float(colors.length) * float(colorRange) / 99.0);
+  int start = floor(float(colors[colorPalette].length) * float(colorRange) / 99.0);
 
   color[] trimmedColors = new color[length];
 
   for (int i = 0; i < length; i++) {
     int copyIndex = (start + i * indexJump) % colors.length;
-    trimmedColors[i] = colors[copyIndex];
+    trimmedColors[i] = colors[colorPalette][copyIndex];
   }
   return trimmedColors;
 }
