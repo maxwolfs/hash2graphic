@@ -1,112 +1,55 @@
-import processing.core.*; 
-import processing.data.*; 
-import processing.event.*; 
-import processing.opengl.*; 
-
-import controlP5.*; 
-import java.nio.charset.StandardCharsets; 
-import java.security.MessageDigest; 
-import java.security.NoSuchAlgorithmException; 
-
-import java.util.HashMap; 
-import java.util.ArrayList; 
-import java.io.File; 
-import java.io.BufferedReader; 
-import java.io.PrintWriter; 
-import java.io.InputStream; 
-import java.io.OutputStream; 
-import java.io.IOException; 
-
-public class hash2graphic_animated extends PApplet {
-
-/*
-The seed, the starting point is transformed by the SHA-512 algorithm into a hash.
-As the seed is for easier use an incrementing integer starting with 0, 
-it must be converted to a string in order to be processed by the hashing algorithm
-*/
-
-
-
-ControlP5 cp5;
-
-int multiplierValue = 20;
-int speed = 30;
-int colorPalette = 0;
-Slider abc;
-
 int seed = 0;
+
 String hash;
-int multiplier;
+char[] dna;
+
 int r = Math.round(random(0, 128));
 
-int[][] colors = {
-{0xffffcbf2,0xfff3c4fb,0xffecbcfd,0xffe5b3fe,0xffe2afff,0xffdeaaff,0xffd8bbff,0xffd0d1ff,0xffc8e7ff,0xffc0fdff}, // vaporspace
-{0xff05668d,0xff028090,0xff00a896,0xff02c39a,0xfff0f3bd,0xff05668d,0xff028090,0xff00a896,0xff02c39a,0xfff0f3bd}, // blueish-greens
-{0xfff94144,0xfff3722c,0xfff8961e,0xfff9844a,0xfff9c74f,0xff90be6d,0xff43aa8b,0xff4d908e,0xff577590,0xff277da1}, // gedeckter grundstock
-{0xffeddcd2,0xfffff1e6,0xfffde2e4,0xfffad2e1,0xffc5dedd,0xffdbe7e4,0xfff0efeb,0xffd6e2e9,0xffbcd4e6,0xff99c1de}, // pasetel tones
-{0xff7400b8,0xff6930c3,0xff5e60ce,0xff5390d9,0xff4ea8de,0xff48bfe3,0xff56cfe1,0xff64dfdf,0xff72efdd,0xff80ffdb}, // blue-violettes
-{0xff9b5de5,0xfff15bb5,0xfffee440,0xff00bbf9,0xff00f5d4,0xff9b5de5,0xfff15bb5,0xfffee440,0xff00bbf9,0xff00f5d4} // bunt
+color[] colors = {
+  #F4F1BB, #EB5160, #7D82B8, #613F75, #75BBA7, #D7DAE5, #B9CDDA, #8A84E2, #E59F71, #BA5A31, #EFB0A1, #F3F8F2, 
+  #3581B8, #FCB07E, #DEE2D6, #12100E, #817F75, #FFEE93, #B3B5BB, #ADF7B6, #FC9E4F, #F5E0B7, #8BBF9F, #82D4BB, 
+  #82C09A, #1E3888, #E2DE84, #47A8BD, #AF9164, #031927, #E3C567, #F3DE8A, #F2F3AE, #FED766, #EF476F
 }; 
 
-
-
-public void setup() {
-  cp5 = new ControlP5(this);
-  cp5.addSlider("multiplierValue")
-    .setPosition(50,50)
-    .setRange(1,100)
-  ;
-
-  cp5.addSlider("speed")
-    .setPosition(50,75)
-    .setRange(1,30)
-  ;
-
-    cp5.addSlider("seed")
-    .setPosition(50,100)
-    .setRange(1,1000)
-  ;
-
-  cp5.addSlider("colorPalette")
-    .setPosition(50,150)
-    .setRange(0,5)
-  ;
-
-  
+void setup() {
+  size(1000, 1000);
   //fullScreen();
-  //noCursor();
-  frameRate(30);
+  noCursor();
   //noLoop();
   regenerate();
-
-  
 }
 
-public void draw() {
-  background(colors[0][0]); 
-  frameRate(speed);
-
-  fill(multiplierValue);
-  rect(0,0,width,100);
-
+void draw() {
+  background(colors[0]); 
   
-  hash = sha512(str(seed));
+  //println(dna[r]);
+
+  //dna[0]++;
+
+ // println(dna[r]);
+ 
+  hash = "";
   
-  int[] colors = getColors(hash);
+  for (int i = 0; i < dna.length; i++) {
+    hash += (String.valueOf(dna[i]));
+  }
+
+ 
+  color[] colors = getColors(hash);
 
   int[] transformation1 = transformation1(hash, colors);
   int[][] transformation2 = transformation2(transformation1);
 
-  for (int i = 0; i < multiplierValue % 1000; i++) {
-  multiplier = floor(random(i,100));
+  int ca = hash.chars().sum() % transformation2[0].length + 1;
+
+  for (int i = 0; i < frameCount % 60; i++) { // ca
     transformation2 = transformation3(transformation2, colors.length);
-    
   }
   showState(transformation2, colors);
   
 }
 
-public void keyReleased() {
+void keyReleased() {
   if (keyCode == LEFT) {
     seed--;
     regenerate();
@@ -115,20 +58,40 @@ public void keyReleased() {
     seed++;
     regenerate();
   }
+  if (keyCode == DOWN) {
+    dna[r]++;
+  }
+    if (keyCode == UP) {
+    dna[r]--;
+  }
   if (key == ' ') {
     regenerate();
   }
+
   if (key == 's') {
     saveFrame("export/seed_" + nf(seed, 4) + ".png");
   }
+  
   redraw();
 }
 
-public void regenerate () {
+void regenerate () {
+  
   hash = sha512(str(seed));
+  
+  dna = new char[hash.length()];
+  
+  for (int i = 0; i < hash.length(); i++) {
+    dna[i] = hash.charAt(i);
   }
+  
+  hash = "";
+  
 
-public void showState(int[][] state, int[] colors) {
+  }
+  
+
+void showState(int[][] state, color[] colors) {
   for (int i = 0; i < state.length; i++) {
     for (int j = 0; j < state[i].length; j++) {
       fill(colors[state[i][j]]);
@@ -144,29 +107,29 @@ public void showState(int[][] state, int[] colors) {
 }
 
 
-public int[] getColors(String hash) {
+color[] getColors(String hash) {
   int colorCount = hash.chars().sum() % 7 + 1;
   int colorRange = hash.chars().sum() % 98;
   int indexJump = hash.chars().sum() % 2 + 1;
 
-  int length = min(colorCount, colors[colorPalette].length);
+  int length = min(colorCount, colors.length);
   length = max(3, colorCount);
 
-  int start = floor(PApplet.parseFloat(colors[colorPalette].length) * PApplet.parseFloat(colorRange) / 99.0f);
+  int start = floor(float(colors.length) * float(colorRange) / 99.0);
 
-  int[] trimmedColors = new int[length];
+  color[] trimmedColors = new color[length];
 
   for (int i = 0; i < length; i++) {
     int copyIndex = (start + i * indexJump) % colors.length;
-    trimmedColors[i] = colors[colorPalette][copyIndex];
+    trimmedColors[i] = colors[copyIndex];
   }
   return trimmedColors;
 }
 
-public int[] transformation1(String hash, int[] colors) {
+int[] transformation1(String hash, color[] colors) {
   ArrayList<Integer> convertedCharacters = new ArrayList();
   for (int i = 0; i < hash.length(); i++) {
-    int position = PApplet.parseInt(hash.charAt(i));
+    int position = int(hash.charAt(i));
 
     // Converting ASCII DEC values to useful values
     if (position >= 48 && position <= 57) {
@@ -178,6 +141,9 @@ public int[] transformation1(String hash, int[] colors) {
     int colorIndex = position % colors.length;
 
     if (i > 0) {    
+      //int mpultiplier = int(hash.charAt(i-1)) % max(position, 1);
+      int multiplier = position % max(int(hash.charAt(i-1)), 1);
+      multiplier = 1000;
       for (int j = 0; j < multiplier; j++) {
         convertedCharacters.add(colorIndex);
       }
@@ -193,7 +159,7 @@ public int[] transformation1(String hash, int[] colors) {
   return graphics;
 }
 
-public int[][] transformation2(int[] state) {
+int[][] transformation2(int[] state) {
 
   // https://math.stackexchange.com/a/2570649
   float ratio = (float) width / height;
@@ -219,7 +185,7 @@ public int[][] transformation2(int[] state) {
   return neighbors;
 }
 
-public int[][] transformation3(int[][] state, int neighborhoods) {
+int[][] transformation3(int[][] state, int neighborhoods) {
   int[][] nextState = new int[state.length][state[0].length];
   for (int i = 0; i < state.length; i++) {
     for (int j = 0; j < state[i].length; j++) {
@@ -238,9 +204,9 @@ public int[][] transformation3(int[][] state, int neighborhoods) {
 
 // --- SHA-512
 
- 
- 
- 
+import java.nio.charset.StandardCharsets; 
+import java.security.MessageDigest; 
+import java.security.NoSuchAlgorithmException; 
 
 public String sha512(String passwordToHash) {
   String salt = "";
@@ -252,7 +218,7 @@ public String sha512(String passwordToHash) {
     byte[] bytes = md.digest(passwordToHash.getBytes(StandardCharsets.UTF_8)); 
     StringBuilder sb = new StringBuilder(); 
     for (int i=0; i< bytes.length; i++) {
-      sb.append(Integer.toString((bytes[i] & 0xff) + 0x100, 33).substring(1));
+      sb.append(Integer.toString((bytes[i] & 0xff) + 0x100, 16).substring(1));
     }
     generatedPassword = sb.toString();
   } 
@@ -260,14 +226,4 @@ public String sha512(String passwordToHash) {
     e.printStackTrace();
   }
   return generatedPassword;
-}
-  public void settings() {  size(800, 800); }
-  static public void main(String[] passedArgs) {
-    String[] appletArgs = new String[] { "hash2graphic_animated" };
-    if (passedArgs != null) {
-      PApplet.main(concat(appletArgs, passedArgs));
-    } else {
-      PApplet.main(appletArgs);
-    }
-  }
 }
